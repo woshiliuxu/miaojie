@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "LolAutoAccept",
-  "version": "1.1.1",
-  "identifier": "com.liuxu.lolautoaccept",
+  "productName": "miaojie",
+  "version": "2.0.0",
+  "identifier": "com.liuxu.miaojie",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://127.0.0.1:1420",
@@ -13,11 +13,11 @@
     "windows": [
       {
         "label": "main",
-        "title": "对局确认助手",
-        "width": 400,
-        "height": 520,
-        "minWidth": 360,
-        "minHeight": 460,
+        "title": "秒接",
+        "width": 320,
+        "height": 236,
+        "minWidth": 300,
+        "minHeight": 216,
         "resizable": true,
         "center": true,
         "decorations": false,
@@ -26,7 +26,7 @@
       },
       {
         "label": "capsule",
-        "title": "对局确认助手",
+        "title": "秒接",
         "url": "capsule.html",
         "width": 224,
         "height": 78,

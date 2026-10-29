@@ -1,4 +1,4 @@
-//! 对局确认助手 —— 只有一件事：匹配成功时自动点“接受”。
+//! 秒接 —— 只有一件事：匹配成功时自动点“接受”。
 //!
 //! 数据来源全部是客户端本地 REST 接口（LCU），不注入、不读内存、不模拟键鼠。
 
@@ -78,18 +78,37 @@ fn today() -> String {
 }
 
 fn push_log(state: &Shared, kind: &str, text: &str) {
-    let mut guard = match state.lock() {
-        Ok(g) => g,
-        Err(_) => return,
-    };
-    guard.logs.push_front(LogItem {
-        time: now_time(),
-        text: text.to_string(),
-        kind: kind.to_string(),
-    });
-    while guard.logs.len() > MAX_LOGS {
-        guard.logs.pop_back();
+    let time = now_time();
+
+    if let Ok(mut guard) = state.lock() {
+        guard.logs.push_front(LogItem {
+            time: time.clone(),
+            text: text.to_string(),
+            kind: kind.to_string(),
+        });
+        while guard.logs.len() > MAX_LOGS {
+            guard.logs.pop_back();
+        }
     }
+
+    // 界面上不再显示日志，但仍然落盘：出问题直接看 %APPDATA%\miaojie\app.log
+    if let Some(dir) = log_dir() {
+        use std::io::Write;
+        if let Ok(mut file) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(dir.join("app.log"))
+        {
+            let _ = writeln!(file, "{time} [{kind}] {text}");
+        }
+    }
+}
+
+fn log_dir() -> Option<std::path::PathBuf> {
+    let base = std::env::var("APPDATA").ok()?;
+    let dir = std::path::PathBuf::from(base).join("miaojie");
+    std::fs::create_dir_all(&dir).ok()?;
+    Some(dir)
 }
 
 fn snapshot_of(state: &Shared) -> Snapshot {

@@ -1,4 +1,4 @@
-# 对局确认助手
+# 秒接
 
 匹配成功时自动点「接受」，不用再盯着屏幕 —— 就这一个功能。
 
@@ -21,10 +21,10 @@
 
 | 形态 | 尺寸 | 用途 |
 | --- | --- | --- |
-| 主界面 | 400×520 | 看阶段、看今日次数、看运行记录、调延迟 |
+| 主界面 | 320×236 | 左边状态、右边圆开关、底部今日次数；头像和名字在标题栏；延迟等设置在「详情」抽屉 |
 | 胶囊模式 | 224×78（透明） | 挂在桌面上（置顶、不占任务栏），只做开 / 关 |
 
-顶栏第一个按钮（胶囊图标）进入胶囊模式：主界面隐藏，桌面右下角出现一颗小胶囊。
+标题栏右侧第一个按钮（胶囊图标）进入胶囊模式：主界面隐藏，桌面右下角出现一颗小胶囊。
 胶囊上只有一个开关，外加右上角一个回主界面的小箭头（双击胶囊也行）；`●` 的颜色就是当前连接状态。
 
 ## 技术栈
@@ -45,7 +45,7 @@ cd src-tauri && cargo build --release --features tauri/custom-protocol
 python tools/create-shortcut.py   # 建桌面快捷方式
 ```
 
-exe 输出在 `src-tauri/target/release/LolAutoAccept.exe`。
+exe 输出在 `src-tauri/target/release/miaojie.exe`。发版打包用 `python tools/publish.py`（生成 `发布/Miaojie.<版本>.zip`）。
 
 > 裸 `cargo build --release` 少了 `--features tauri/custom-protocol` 会按 dev 模式运行，
 > 去连 `devUrl` 报 `ERR_CONNECTION_REFUSED`。
@@ -63,6 +63,7 @@ exe 输出在 `src-tauri/target/release/LolAutoAccept.exe`。
 
 ## 版本
 
+- 2.0.0 —— 更名「秒接」（原：对局确认助手），界面重做为 320×236 紧凑横向版：左边状态、右边 60px 圆形开关、背景 LOL 点阵字随状态联动；头像与召唤师名回到标题栏；日志不再进界面（改写 `%APPDATA%\miaojie\app.log`），设置收进「详情」抽屉；字号整体放大一档（状态 14px / 说明 12px）
 - 1.1.1 —— 主色由红改金（LoL 金色系）
 - 1.1.0 —— 胶囊模式（桌面置顶小胶囊，只做开 / 关）+ 主界面整体重排
 - 1.0.0 —— 首个可用版本

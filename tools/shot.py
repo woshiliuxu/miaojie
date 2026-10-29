@@ -33,7 +33,7 @@ def find_window(keyword: str):
 
 
 def main():
-    keyword = sys.argv[1] if len(sys.argv) > 1 else "对局确认助手"
+    keyword = sys.argv[1] if len(sys.argv) > 1 else "秒接"
     out = sys.argv[2] if len(sys.argv) > 2 else "_shot/shot.png"
     wins = find_window(keyword)
     if not wins:

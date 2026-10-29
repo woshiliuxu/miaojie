@@ -1,13 +1,16 @@
 /* ============================================================
-   对局确认助手 · Liquid Glass 主题（主窗口 400×520）
-   令牌与组件沿用 D:\Tools\网易云云盘工具\app\ui\style.css
+   秒接 · Liquid Glass
+   320×236 紧凑横向窗口：左边一句状态，右边一个开关，底部一行次数。
+   主功能是"匹配成功替你点接受"，所以开关是唯一的操作控件，
+   状态只是辅助说明，不放大、不居中。
+   日志不进界面（只写 %APPDATA%\miaojie\app.log）。
    浅色为默认，html[data-appearance="dark"] 切深色。
    ============================================================ */
 :root {
   --background: #f4f5f7;
   --ink: #22242b;
   --muted: #70747f;
-  --dim: rgba(34, 36, 43, .48);
+  --dim: rgba(34, 36, 43, .62);
   --line: rgba(38, 43, 55, .09);
   --soft: #eceef2;
   --accent: #a3701a;
@@ -19,25 +22,24 @@
   --shadow: rgba(43, 50, 72, .09);
   --shadow-strong: rgba(43, 50, 72, .16);
   --row-hover: rgba(255, 255, 255, .65);
-  --input-bg: rgba(255, 255, 255, .72);
   --ok: #178a4c;
   --warn: #b26a05;
   --err: #d5344a;
-  --err-soft: rgba(213, 52, 74, .10);
-  --scrollbar: rgba(38, 43, 55, .22);
-  --scrollbar-hover: rgba(38, 43, 55, .34);
   --radius: 18px;
-  --radius-sm: 11px;
+  --radius-sm: 10px;
   --blur: blur(24px) saturate(165%);
   --glass-inset: inset 0 1px 1px rgba(255, 255, 255, .56), inset 0 -1px 1px rgba(255, 255, 255, .19);
   --mono: "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+  /* 背景 LOL 点阵字：平时很淡，等待确认时点亮 */
+  --deco: rgba(163, 112, 26, .34);
+  --deco-hot: rgba(163, 112, 26, .62);
 }
 
 html[data-appearance="dark"] {
   --background: #17191f;
   --ink: #f2f3f7;
   --muted: #a2a6b3;
-  --dim: rgba(242, 243, 247, .45);
+  --dim: rgba(242, 243, 247, .58);
   --line: rgba(235, 240, 255, .10);
   --soft: #30343f;
   --accent: #e8c37a;
@@ -49,14 +51,12 @@ html[data-appearance="dark"] {
   --shadow: rgba(0, 0, 0, .2);
   --shadow-strong: rgba(0, 0, 0, .35);
   --row-hover: rgba(255, 255, 255, .05);
-  --input-bg: rgba(0, 0, 0, .28);
   --ok: #4ade80;
   --warn: #fbbf24;
   --err: #fb7185;
-  --err-soft: rgba(251, 113, 133, .16);
-  --scrollbar: rgba(255, 255, 255, .16);
-  --scrollbar-hover: rgba(255, 255, 255, .28);
   --glass-inset: inset 0 1px 1px rgba(255, 255, 255, .08), inset 0 -1px 1px rgba(255, 255, 255, .03);
+  --deco: rgba(232, 195, 122, .20);
+  --deco-hot: rgba(232, 195, 122, .46);
 }
 
 * { box-sizing: border-box; }
@@ -80,79 +80,107 @@ body::before {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at 9% 14%, rgba(156, 189, 217, .42), transparent 39%),
-    radial-gradient(ellipse at 80% 78%, rgba(226, 203, 158, .32), transparent 42%);
+    radial-gradient(ellipse at 9% 14%, rgba(156, 189, 217, .42), transparent 45%),
+    radial-gradient(ellipse at 84% 84%, rgba(226, 203, 158, .32), transparent 48%);
 }
-html[data-appearance="dark"] body::before { opacity: .5; }
+/* 深色里同样的色团在深底上会发白，换成更淡更暖的一组、整体压低 */
+html[data-appearance="dark"] body::before {
+  opacity: .34;
+  background:
+    radial-gradient(ellipse at 4% 8%, rgba(96, 132, 176, .30), transparent 50%),
+    radial-gradient(ellipse at 88% 88%, rgba(170, 138, 84, .24), transparent 52%);
+}
 
 #app { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; }
 
-button { font: inherit; }
-button:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+/* ---------------- 背景 LOL（点阵字，随状态联动） ----------------
+   用 radial-gradient 做网点遮罩把实心字打成点阵；平时很低调，
+   已连接时缓慢呼吸，等待确认那几秒整片点亮成金色。 */
+.lol {
+  position: absolute;
+  left: -9px;
+  bottom: -16px;
+  z-index: 0;
+  font-size: 96px;
+  font-weight: 600;
+  letter-spacing: -3px;
+  line-height: 1;
+  color: var(--deco);
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(circle at center, #000 1.15px, transparent 1.35px);
+  -webkit-mask-size: 5px 5px;
+  mask-image: radial-gradient(circle at center, #000 1.15px, transparent 1.35px);
+  mask-size: 5px 5px;
+  transition: color .3s;
+}
+.lol.live { animation: lolBreathe 3.6s ease-in-out infinite; }
+.lol.hot {
+  color: var(--deco-hot);
+  animation: lolHot 1.1s ease-in-out infinite;
+}
+@keyframes lolBreathe {
+  0%, 100% { opacity: .62; }
+  50% { opacity: 1; }
+}
+@keyframes lolHot {
+  0%, 100% { opacity: .8; }
+  50% { opacity: 1; }
 }
 
-/* ---------------- topbar ---------------- */
-.topbar {
-  height: 60px;
-  flex: 0 0 60px;
-  border-bottom: 1px solid var(--line);
+button { font: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------------- 标题栏（38px） ----------------
+   左侧是「头像 + 召唤师名」；未连接客户端时退化成软件名「秒接」，
+   这样标题栏本身就能回答"现在连的是哪个号"。 */
+.bar {
+  position: relative;
+  z-index: 1;
+  height: 38px;
+  flex: 0 0 38px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 10px 0 14px;
-  user-select: none;
-  -webkit-user-select: none;
+  padding: 0 9px 0 14px;
 }
-.dragzone {
+.drag {
   flex: 1;
   min-width: 0;
   height: 100%;
   display: flex;
   align-items: center;
-  gap: 10px;
-  cursor: default;
+  gap: 8px;
 }
-.winbtns {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.brand {
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
-  border-radius: 10px;
-  background: var(--accent);
-  color: var(--accent-ink);
+.tav {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
   display: grid;
   place-items: center;
-  box-shadow: 0 8px 17px var(--shadow-strong);
+  box-shadow: 0 0 0 1px var(--glass-border);
 }
-.brand svg { width: 17px; height: 17px; }
-.titles { min-width: 0; }
-.titles h1 {
-  margin: 0;
-  font-size: 14.5px;
+.name {
+  min-width: 0;
+  max-width: 150px;
+  font-size: 14px;
   font-weight: 600;
+  color: var(--ink);
   letter-spacing: .2px;
-  white-space: nowrap;
-}
-.titles p {
-  margin: 1px 0 0;
-  font-size: 11px;
-  color: var(--dim);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
+.btns { display: flex; align-items: center; gap: 6px; }
 
-.winbtn {
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
+.wbtn {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
   border-radius: 50%;
   border: 1px solid var(--glass-border);
   background: var(--glass);
@@ -162,287 +190,193 @@ button:focus-visible {
   color: var(--muted);
   display: grid;
   place-items: center;
-  cursor: pointer;
   padding: 0;
   transition: background .15s, color .15s, border-color .15s, transform .12s;
 }
-.winbtn:hover { background: var(--row-hover); color: var(--ink); }
-.winbtn:active { transform: scale(.94); }
-.winbtn svg { width: 13.5px; height: 13.5px; }
-.winbtn.close:hover {
-  background: var(--err);
-  border-color: var(--err);
-  color: #fff;
-}
-.winbtn.close:active { transform: scale(.92); }
+.wbtn:hover { background: var(--row-hover); color: var(--ink); }
+.wbtn:active { transform: scale(.92); }
+.wbtn svg { width: 12px; height: 12px; }
+.wbtn.close:hover { background: var(--err); border-color: var(--err); color: #fff; }
 
-/* ---------------- 主体 ---------------- */
+/* ---------------- 主体：左边状态，右边开关 ---------------- */
 .body {
+  position: relative;
+  z-index: 1;
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 11px 12px 12px;
-  overflow: hidden;
+  padding: 0 14px 8px;
 }
 
-.card {
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
+.row {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.stat { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.stline {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.stline .dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: var(--dim);
+  transition: background .15s;
+}
+.stline.live .dot { background: var(--ok); }
+.stline.hot { color: var(--accent); }
+.stline.hot .dot { background: var(--accent); animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+
+.stsub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ctrl {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.clabel { font-size: 12px; color: var(--dim); line-height: 1.2; }
+
+/* 圆形开关：一整颗按钮，白色滑块左右滑，比胶囊更有分量 */
+.switch {
+  width: 60px;
+  height: 60px;
+  flex: 0 0 60px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--soft);
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  transition: background .18s, box-shadow .18s, transform .12s;
+}
+.switch i {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px var(--shadow-strong);
+  transition: transform .18s;
+}
+html[data-appearance="dark"] .switch i { background: #e9ecf2; }
+.switch:active { transform: scale(.96); }
+.switch.on {
+  background: var(--accent);
+  box-shadow: 0 6px 18px var(--accent-soft);
+}
+.switch.on i { transform: translateX(26px); }
+
+.foot {
+  flex: 0 0 auto;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.foot b { font-weight: 600; color: var(--ink); }
+.link {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  transition: color .15s, background .15s, border-color .15s;
+}
+.link:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+
+/* ---------------- 详情抽屉 ----------------
+   z-index 必须高于 .bar / .body（两者都是 1），否则抽屉会被主体层盖住：
+   视觉上发透、点击也被主体层截走。mask 2 / sheet 3。 */
+.mask {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: rgba(20, 22, 30, .16);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s;
+}
+.mask.show { opacity: 1; pointer-events: auto; }
+
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  transform: translateY(102%);
+  transition: transform .2s ease;
+  border-top: 1px solid var(--glass-border);
+  border-radius: 16px 16px 0 0;
   background: var(--glass);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-  box-shadow: var(--glass-inset), 0 8px 30px var(--shadow);
-  padding: 11px 14px;
-  flex: 0 0 auto;
-  transition: border-color .15s, box-shadow .2s;
+  box-shadow: 0 -10px 30px var(--shadow);
+  padding: 8px 14px 10px;
 }
-/* 等待确认时主卡描边跟着主色走，一眼能看出来 */
-.card.hero.live {
-  border-color: var(--accent-soft);
-  box-shadow: var(--glass-inset), 0 8px 30px var(--shadow), 0 0 0 1px var(--accent-soft);
-}
-
-.spacer { flex: 1; }
-
-/* 召唤师行 */
-.who { display: flex; align-items: center; gap: 9px; min-width: 0; }
-.avatar {
-  width: 34px;
-  height: 34px;
-  flex: 0 0 34px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: var(--soft);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 3px 10px var(--shadow);
-  color: var(--dim);
-  display: grid;
-  place-items: center;
-}
-.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.avatar svg { width: 16px; height: 16px; }
-.pinfo { display: flex; align-items: baseline; gap: 6px; min-width: 0; flex: 1; }
-.pname {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: .1px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.plv { font-size: 10.5px; color: var(--dim); flex: 0 0 auto; }
-
-.status {
-  flex: 0 0 auto;
-  display: inline-flex;
+.sheet.show { transform: translateY(0); }
+.sheet-head {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--dim);
+  justify-content: space-between;
+  margin-bottom: 4px;
 }
-.status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--dim); }
-.status.ok { color: var(--ok); }
-.status.ok::before { background: var(--ok); }
-.status.run { color: var(--accent); }
-.status.run::before { background: var(--accent); animation: pulse 1s ease-in-out infinite; }
-@keyframes pulse { 50% { opacity: .25; } }
+.sheet-head strong { font-size: 13px; font-weight: 600; }
 
-/* 阶段大字 + 今日次数 */
-.phaserow {
-  margin-top: 11px;
+.srow {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 0;
-}
-.phaserow .ph {
-  font-size: 23px;
-  font-weight: 600;
-  letter-spacing: .3px;
-  line-height: 1.2;
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.chip {
-  margin-left: auto;
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 3px;
-  padding: 2px 9px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 10.5px;
-  line-height: 1.6;
-  font-variant-numeric: tabular-nums;
-}
-.chip b { font-size: 12px; font-weight: 600; }
-
-.hintrow {
-  margin-top: 5px;
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  min-width: 0;
-}
-.hintrow .hint {
-  font-size: 11px;
-  color: var(--dim);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.port {
-  margin-left: auto;
-  flex: 0 0 auto;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--dim);
-}
-
-/* 主开关 */
-.mainrow { display: flex; align-items: center; gap: 12px; }
-.mainrow .txt { flex: 1; min-width: 0; }
-.mainrow .txt strong { display: block; font-size: 13.5px; font-weight: 600; }
-.mainrow .txt span {
-  display: block;
-  margin-top: 1px;
-  font-size: 11px;
-  color: var(--dim);
-  line-height: 1.4;
-}
-
-.switch {
-  width: 46px;
-  height: 26px;
-  flex: 0 0 46px;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: var(--soft);
-  position: relative;
-  cursor: pointer;
-  padding: 0;
-  transition: background .18s, border-color .18s;
-}
-.switch i {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(20, 24, 35, .28);
-  transition: transform .18s cubic-bezier(.4, .1, .3, 1.2);
-}
-.switch.on { background: var(--accent); border-color: var(--accent); }
-.switch.on i { transform: translateX(20px); }
-
-/* 延迟分段 */
-.segrow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  padding-top: 10px;
+  padding: 7px 0;
   border-top: 1px solid var(--line);
 }
-.segrow .k { font-size: 11.5px; color: var(--dim); flex: 0 0 auto; }
-.seg { display: flex; gap: 4px; margin-left: auto; flex: 0 0 auto; }
-.seg button {
-  border: 1px solid var(--glass-border);
-  background: var(--input-bg);
-  color: var(--muted);
-  font-size: 11.5px;
-  padding: 3px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  flex: 0 0 auto;
-  white-space: nowrap;
-  transition: background .15s, color .15s, border-color .15s, transform .08s;
-}
-.seg button:hover { color: var(--ink); }
-.seg button:active { transform: scale(.96); }
-.seg button.on {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-  font-weight: 600;
-}
+.srow:first-of-type { border-top: 0; }
+.srow .k { flex: 0 0 auto; font-size: 12.5px; color: var(--muted); }
+.srow .v { margin-left: auto; font-size: 12px; color: var(--dim); text-align: right; max-width: 190px; }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* 日志（吃掉剩余高度，内部滚动） */
-.logcard {
-  flex: 1 1 auto;
-  min-height: 0;
+.seg {
+  margin-left: auto;
   display: flex;
-  flex-direction: column;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--soft);
 }
-.loghead { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex: 0 0 auto; }
-.loghead strong { font-size: 12px; font-weight: 600; }
-.link {
+.seg button {
   border: 0;
   background: transparent;
   color: var(--muted);
-  font-size: 11px;
-  cursor: pointer;
-  padding: 1px 7px;
+  font-size: 12px;
+  padding: 3px 9px;
   border-radius: 6px;
   transition: background .15s, color .15s;
 }
-.link:hover { color: var(--ink); background: var(--row-hover); }
-
-.logs {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  font-family: var(--mono);
-  font-size: 11px;
-  line-height: 1.7;
-}
-.logs::-webkit-scrollbar { width: 7px; }
-.logs::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
-.logs::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
-.logs::-webkit-scrollbar-track { background: transparent; }
-
-.logrow { display: flex; gap: 7px; align-items: baseline; flex: 0 0 auto; }
-.logrow .t { color: var(--dim); flex: 0 0 54px; }
-.logrow .m { flex: 1; min-width: 0; word-break: break-all; }
-.logrow.ok .m { color: var(--ok); }
-.logrow.warn .m { color: var(--warn); }
-.logrow.err .m { color: var(--err); }
-
-.empty {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  padding: 6px;
-  text-align: center;
-}
-.empty p { margin: 0; color: var(--muted); font-size: 11.5px; }
-.empty p.dim { font-size: 10.5px; color: var(--dim); }
-
-/* 底部 */
-.foot {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10.5px;
-  color: var(--dim);
-  padding: 1px 3px 0;
-}
-.foot .ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.seg button.on { background: var(--glass); color: var(--ink); box-shadow: 0 1px 3px var(--shadow); }

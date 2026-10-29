@@ -13,9 +13,9 @@ import win32com.client
 
 ROOT = Path(__file__).resolve().parent.parent
 # 指向发布目录的中文名 exe（与 WebView2Loader.dll 同目录，缺 dll 会启动失败）
-EXE = ROOT / "发布" / "对局确认助手.exe"
+EXE = ROOT / "发布" / "秒接.exe"
 ICON = ROOT / "src-tauri" / "icons" / "icon.ico"
-NAME = "对局确认助手.lnk"
+NAME = "秒接.lnk"
 
 
 def desktop_dir() -> Path:
@@ -41,7 +41,7 @@ def main() -> int:
     shortcut.WorkingDirectory = str(EXE.parent)
     if ICON.exists():
         shortcut.IconLocation = f"{ICON},0"
-    shortcut.Description = "对局确认助手 · 匹配成功自动接受，只读本地接口"
+    shortcut.Description = "秒接 · 匹配成功自动接受，只读本地接口"
     shortcut.Save()
     print("created:", target)
     return 0

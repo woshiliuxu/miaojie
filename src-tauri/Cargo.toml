@@ -1,12 +1,12 @@
 [package]
-name = "lol-auto-accept"
-version = "1.1.1"
-description = "对局确认助手"
+name = "miaojie"
+version = "2.0.0"
+description = "秒接 · 英雄联盟匹配成功自动接受"
 edition = "2021"
 rust-version = "1.77"
 
 [lib]
-name = "lol_auto_accept_lib"
+name = "miaojie_lib"
 # 桌面端只需要 rlib。带 cdylib 时 GNU ld 会因导出序号超限（export ordinal too large）失败，
 # 而 cdylib 只有移动端才需要。
 crate-type = ["rlib"]

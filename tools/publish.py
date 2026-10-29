@@ -4,7 +4,7 @@
 产物：
   发布/对局确认助手.exe
   发布/WebView2Loader.dll
-  对局确认助手.zip        ← 发这个
+  发布/Miaojie.2.0.0.zip   <- 发这个（GitHub 资产名用 ASCII）
 
 为什么要带 dll：exe 的导入表里写死了 WebView2Loader.dll，
 单独拿出 exe 到别的目录会直接报「找不到 WebView2Loader.dll」
@@ -12,6 +12,7 @@
 
 用法：python tools/publish.py
 """
+import json
 import shutil
 import sys
 import zipfile
@@ -20,17 +21,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 RELEASE = ROOT / "src-tauri" / "target" / "release"
 OUT = ROOT / "发布"
-NAME = "对局确认助手"
+NAME = "秒接"
+VERSION = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
 
-SRC_EXE = RELEASE / "lol-auto-accept.exe"
+SRC_EXE = RELEASE / "miaojie.exe"
 SRC_DLL = RELEASE / "WebView2Loader.dll"
 
-README = """对局确认助手
+README = """秒接
 
 【怎么用】
 1. 把整个文件夹解压出来，别只拿 exe —— 旁边的 WebView2Loader.dll 必须和它待在同一个文件夹里。
-2. 双击「对局确认助手.exe」。
-3. 打开英雄联盟客户端，软件会自动连上，显示你的头像、名字和等级。
+2. 双击「秒接.exe」。
+3. 打开英雄联盟客户端，软件会自动连上，显示你的头像、名字和等级；排到对局会替你点接受。
 
 【如果 Windows 拦截】
 第一次打开可能会提示「Windows 已保护你的电脑」。原因是个人开发的小工具没有购买数字签名证书，
@@ -70,7 +72,7 @@ def main() -> int:
     files.append(readme)
     print(f"  {readme.relative_to(ROOT)}  {readme.stat().st_size / 1024:.1f} KB")
 
-    zip_path = ROOT / f"{NAME}.zip"
+    zip_path = OUT / f"Miaojie.{VERSION}.zip"
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for dst in files:
             # 解压后是一个文件夹，避免文件散落在桌面
