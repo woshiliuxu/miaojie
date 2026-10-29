@@ -63,6 +63,7 @@ exe 输出在 `src-tauri/target/release/LolAutoAccept.exe`。
 
 ## 版本
 
+- 1.1.1 —— 主色由红改金（LoL 金色系）
 - 1.1.0 —— 胶囊模式（桌面置顶小胶囊，只做开 / 关）+ 主界面整体重排
 - 1.0.0 —— 首个可用版本
 

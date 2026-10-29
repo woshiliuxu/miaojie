@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
-const VERSION = "1.1.0";
+const VERSION = "1.1.1";
 
 interface LogItem {
   time: string;
