@@ -6,9 +6,9 @@
   --ink: #22242b;
   --muted: #70747f;
   --dim: rgba(34, 36, 43, .48);
-  --accent: #d52d4a;
+  --accent: #a3701a;
   --accent-ink: #ffffff;
-  --accent-soft: rgba(213, 45, 74, .12);
+  --accent-soft: rgba(163, 112, 26, .12);
   --glass: rgba(255, 255, 255, .74);
   --glass-border: rgba(255, 255, 255, .95);
   --glass-inset: inset 0 1px 1px rgba(255, 255, 255, .6), inset 0 -1px 1px rgba(255, 255, 255, .2);
@@ -23,9 +23,9 @@ html[data-appearance="dark"] {
   --ink: #f2f3f7;
   --muted: #a2a6b3;
   --dim: rgba(242, 243, 247, .45);
-  --accent: #f36a82;
-  --accent-ink: #20151a;
-  --accent-soft: rgba(243, 106, 130, .18);
+  --accent: #e8c37a;
+  --accent-ink: #20180c;
+  --accent-soft: rgba(232, 195, 122, .18);
   --glass: rgba(24, 28, 38, .62);
   --glass-border: rgba(255, 255, 255, .14);
   --glass-inset: inset 0 1px 1px rgba(255, 255, 255, .08), inset 0 -1px 1px rgba(255, 255, 255, .03);
