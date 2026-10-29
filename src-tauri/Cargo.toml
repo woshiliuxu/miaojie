@@ -1,0 +1,31 @@
+[package]
+name = "lol-auto-accept"
+version = "1.1.0"
+description = "对局确认助手"
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "lol_auto_accept_lib"
+# 桌面端只需要 rlib。带 cdylib 时 GNU ld 会因导出序号超限（export ordinal too large）失败，
+# 而 cdylib 只有移动端才需要。
+crate-type = ["rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["native-tls"] }
+base64 = "0.22"
+sysinfo = "0.29"
+chrono = "0.4"
+tokio = { version = "1", features = ["time", "sync"] }
+
+[profile.release]
+# 注意：这台机器上 rustc 1.99.1 + windows-gnu 在 LTO 阶段会崩（0xc0000005），
+# 所以不开 lto。体积换稳定，值。
+opt-level = "s"
+strip = true

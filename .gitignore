@@ -1,0 +1,24 @@
+# Rust / Tauri 构建产物
+src-tauri/target/
+src-tauri/gen/schemas/
+
+# 前端
+node_modules/
+dist/
+
+# 发布产物（走 GitHub Releases 分发，不进仓库）
+发布/*.exe
+发布/*.dll
+*.zip
+
+# 开发期间的参考源码与截图，不属于本项目
+_frac_src/
+_frank_src/
+_shot/
+
+# 本地临时文件
+*.log
+*.exe.old
+*.old
+tools/__pycache__/
+.workbuddy/
